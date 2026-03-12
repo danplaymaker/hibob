@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "functions": {
+    "api/sync-jobs.ts": { "maxDuration": 60 },
+    "api/cron/sync.ts": { "maxDuration": 60 }
+  }
+}

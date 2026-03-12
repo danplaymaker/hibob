@@ -1,0 +1,18 @@
+{
+  "name": "hibob-webflow-sync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Syncs HiBob job ads into Webflow CMS via scheduled Vercel serverless functions",
+  "scripts": {
+    "dev": "vercel dev",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.15",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}
