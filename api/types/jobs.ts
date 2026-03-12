@@ -53,17 +53,21 @@ export interface WebflowJobFieldData {
   /** Built-in Webflow name field — also used as the visible title */
   name: string;
   /** HiBob job ID — used as our idempotency key */
-  "hibob-id": string;
-  /** Mapped from jobAd/site — must be a Plain Text field in Webflow */
-  location: string;
+  hibob_id: string;
+  /** Mapped from jobAd/site */
+  location_new: string;
   /** Full HTML description from HiBob */
-  description: string;
+  job_descriptions: string;
   /** Direct application link */
-  "apply-url": string;
+  apply_url: string;
   /** Canonical URL on your careers site */
-  "job-url": string;
+  job_url: string;
   /** False when the job no longer appears in HiBob */
-  "is-active": boolean;
+  is_active: boolean;
+  /** Optional rich-text fields — populated when available */
+  job_requirements?: string;
+  job_responsibilities?: string;
+  job_benefits?: string;
 }
 
 /**
