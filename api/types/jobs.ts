@@ -13,6 +13,9 @@ export interface HiBobJob {
   site: string;
   description: string;
   applyUrl: string;
+  requirements: string;
+  responsibilities: string;
+  benefits: string;
 }
 
 /**
@@ -28,6 +31,10 @@ export interface HiBobRawRecord {
   "/jobAd/site"?: { value?: string };
   "/jobAd/description"?: { value?: string };
   "/jobAd/applyUrl"?: { value?: string };
+  "/jobAd/requirements"?: { value?: string };
+  "/jobAd/responsibilities"?: { value?: string };
+  "/jobAd/benefits"?: { value?: string };
+  [key: string]: { value?: string } | undefined;
 }
 
 /**

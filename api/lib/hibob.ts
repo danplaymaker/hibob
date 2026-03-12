@@ -12,6 +12,9 @@ const REQUEST_FIELDS = [
   "site",
   "description",
   "applyUrl",
+  "requirements",
+  "responsibilities",
+  "benefits",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -57,6 +60,9 @@ function normaliseRecord(raw: HiBobRawRecord): HiBobJob | null {
     site: raw["/jobAd/site"]?.value ?? "",
     description: raw["/jobAd/description"]?.value ?? "",
     applyUrl: raw["/jobAd/applyUrl"]?.value ?? "",
+    requirements: raw["/jobAd/requirements"]?.value ?? "",
+    responsibilities: raw["/jobAd/responsibilities"]?.value ?? "",
+    benefits: raw["/jobAd/benefits"]?.value ?? "",
   };
 }
 
@@ -127,6 +133,13 @@ export async function fetchActiveJobs(): Promise<HiBobJob[]> {
 
   if (rawRecords.length === 0) {
     logger.warn("hibob: API returned zero job ads — verify filters/tenant");
+  }
+
+  // Log the raw keys from the first record so we can verify field names
+  if (rawRecords.length > 0) {
+    logger.info("hibob: first raw record keys (for field verification)", {
+      keys: Object.keys(rawRecords[0]!),
+    });
   }
 
   const jobs: HiBobJob[] = [];

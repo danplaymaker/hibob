@@ -22,6 +22,9 @@ function buildFieldData(job: HiBobJob): WebflowJobFieldData {
     "apply-url": job.applyUrl,
     "job-url": `/careers/${job.id}`,
     "is-active": true,
+    "job-requirements": job.requirements || undefined,
+    "job-responsibilities": job.responsibilities || undefined,
+    "job-benefits": job.benefits || undefined,
   };
 }
 
