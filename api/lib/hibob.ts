@@ -112,6 +112,9 @@ export async function fetchActiveJobs(): Promise<HiBobJob[]> {
     throw new Error("hibob: failed to parse JSON response");
   }
 
+  // Log the top-level keys so we can identify the correct array key if jobs return 0
+  logger.debug("hibob: raw response keys", { keys: Object.keys(payload as object), payload });
+
   // HiBob wraps the array under `jobAds` (documented) but we handle variants
   // defensively in case a future API version changes the key.
   const rawRecords: HiBobRawRecord[] =
