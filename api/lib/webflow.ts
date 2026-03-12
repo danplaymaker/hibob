@@ -211,7 +211,7 @@ export async function deactivateWebflowJob(itemId: string): Promise<void> {
   await apiFetch(`/collections/${collectionId}/items/${itemId}`, {
     method: "PATCH",
     body: JSON.stringify({
-      fieldData: { is_active: false },
+      fieldData: { "is-active": false },
       isDraft: true,
     }),
   });
@@ -254,7 +254,7 @@ export async function publishItems(itemIds: string[]): Promise<void> {
 export function buildHibobIdIndex(items: WebflowItem[]): Map<string, WebflowItem> {
   const index = new Map<string, WebflowItem>();
   for (const item of items) {
-    const hibobId = item.fieldData["hibob_id"];
+    const hibobId = item.fieldData["hibob-id"];
     if (typeof hibobId === "string" && hibobId) {
       index.set(hibobId, item);
     }

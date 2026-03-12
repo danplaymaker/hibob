@@ -16,12 +16,12 @@ import {
 function buildFieldData(job: HiBobJob): WebflowJobFieldData {
   return {
     name: job.title,
-    hibob_id: job.id,
-    location_new: job.site,
-    job_descriptions: job.description,
-    apply_url: job.applyUrl,
-    job_url: `/careers/${job.id}`,
-    is_active: true,
+    "hibob-id": job.id,
+    "location-new": job.site,
+    "job-descriptions": job.description,
+    "apply-url": job.applyUrl,
+    "job-url": `/careers/${job.id}`,
+    "is-active": true,
   };
 }
 
@@ -38,11 +38,11 @@ function needsUpdate(
 ): boolean {
   const fields: Array<keyof WebflowJobFieldData> = [
     "name",
-    "location_new",
-    "job_descriptions",
-    "apply_url",
-    "job_url",
-    "is_active",
+    "location-new",
+    "job-descriptions",
+    "apply-url",
+    "job-url",
+    "is-active",
   ];
 
   for (const field of fields) {
@@ -153,7 +153,7 @@ export async function runSync(): Promise<SyncResult> {
     }
 
     // Existing job — check if we actually need to update it
-    const reactivating = existing.fieldData["is_active"] === false;
+    const reactivating = existing.fieldData["is-active"] === false;
 
     if (!reactivating && !needsUpdate(existing.fieldData, fieldData)) {
       result.skipped++;
@@ -185,10 +185,10 @@ export async function runSync(): Promise<SyncResult> {
   // Step 4: Deactivate jobs that are no longer in HiBob
   // ------------------------------------------------------------------
   const itemsToDeactivate = webflowItems.filter((item) => {
-    const hibobId = item.fieldData["hibob_id"];
+    const hibobId = item.fieldData["hibob-id"];
     if (typeof hibobId !== "string" || !hibobId) return false;
     // Only deactivate items that are currently active AND not in HiBob anymore
-    return !liveHibobIds.has(hibobId) && item.fieldData["is_active"] !== false;
+    return !liveHibobIds.has(hibobId) && item.fieldData["is-active"] !== false;
   });
 
   if (itemsToDeactivate.length > 0) {
