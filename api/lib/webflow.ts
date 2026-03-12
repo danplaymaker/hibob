@@ -144,7 +144,8 @@ export async function createWebflowJob(
     `/collections/${collectionId}/items`,
     {
       method: "POST",
-      body: JSON.stringify({ fieldData, isDraft: false }),
+      // Use the hibob-id as the slug to guarantee uniqueness across syncs
+      body: JSON.stringify({ fieldData: { ...fieldData, slug: fieldData["hibob-id"] }, isDraft: false }),
     }
   );
 
