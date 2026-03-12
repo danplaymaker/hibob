@@ -121,6 +121,14 @@ export async function fetchAllWebflowJobs(): Promise<WebflowItem[]> {
   logger.info("webflow: fetched all collection items", {
     count: allItems.length,
   });
+
+  // Log the actual field slugs from the first item so we can verify they match our schema
+  if (allItems.length > 0) {
+    logger.info("webflow: first item field keys (for schema verification)", {
+      fieldKeys: Object.keys(allItems[0]!.fieldData),
+    });
+  }
+
   return allItems;
 }
 
