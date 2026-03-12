@@ -42,20 +42,21 @@ function buildAuthHeader(): string {
  * discarding records that are missing the mandatory `id` field.
  */
 function normaliseRecord(raw: HiBobRawRecord): HiBobJob | null {
-  // Support both nested (raw.jobAd.id) and flat (raw.id) response shapes
-  const id = raw.jobAd?.id ?? raw.id;
+  // HiBob returns fields as leading-slash paths with { value } wrappers:
+  // { "/jobAd/id": { value: "abc123" }, "/jobAd/title": { value: "..." }, ... }
+  const id = raw["/jobAd/id"]?.value;
 
   if (!id) {
-    logger.warn("hibob: record missing id — skipping", { raw });
+    logger.warn("hibob: record missing /jobAd/id — skipping", { raw });
     return null;
   }
 
   return {
     id,
-    title: raw.jobAd?.title ?? raw.title ?? "",
-    site: raw.jobAd?.site ?? raw.site ?? "",
-    description: raw.jobAd?.description ?? raw.description ?? "",
-    applyUrl: raw.jobAd?.applyUrl ?? raw.applyUrl ?? "",
+    title: raw["/jobAd/title"]?.value ?? "",
+    site: raw["/jobAd/site"]?.value ?? "",
+    description: raw["/jobAd/description"]?.value ?? "",
+    applyUrl: raw["/jobAd/applyUrl"]?.value ?? "",
   };
 }
 
@@ -112,13 +113,10 @@ export async function fetchActiveJobs(): Promise<HiBobJob[]> {
     throw new Error("hibob: failed to parse JSON response");
   }
 
-  // Temporary: log full response to identify correct array key
-  logger.info("hibob: raw response", { keys: Object.keys(payload as object), payload });
-
-  // HiBob wraps the array under `jobAds` (documented) but we handle variants
-  // defensively in case a future API version changes the key.
-  const rawRecords: HiBobRawRecord[] =
-    payload.jobAds ?? payload.jobs ?? payload.data ?? [];
+  // The API returns a bare array. Fall back to wrapped variants defensively.
+  const rawRecords: HiBobRawRecord[] = Array.isArray(payload)
+    ? (payload as unknown as HiBobRawRecord[])
+    : payload.jobAds ?? payload.jobs ?? payload.data ?? [];
 
   if (!Array.isArray(rawRecords)) {
     logger.warn("hibob: unexpected response shape — treating as empty", {

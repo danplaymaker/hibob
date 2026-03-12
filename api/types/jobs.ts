@@ -17,29 +17,23 @@ export interface HiBobJob {
 
 /**
  * Raw shape of a single record in the HiBob API response.
- * The API nests fields under a `jobAd` key when using the /search endpoint.
+ *
+ * The /search endpoint returns a flat array where each record uses
+ * leading-slash field paths as keys and wraps values in { value: string }.
+ * e.g. { "/jobAd/title": { value: "Finance Manager" }, ... }
  */
 export interface HiBobRawRecord {
-  // Nested shape (some API versions wrap fields under jobAd)
-  jobAd?: {
-    id?: string;
-    title?: string;
-    site?: string;
-    description?: string;
-    applyUrl?: string;
-  };
-  // Flat shape (fields returned directly on the record)
-  id?: string;
-  title?: string;
-  site?: string;
-  description?: string;
-  applyUrl?: string;
+  "/jobAd/id"?: { value?: string };
+  "/jobAd/title"?: { value?: string };
+  "/jobAd/site"?: { value?: string };
+  "/jobAd/description"?: { value?: string };
+  "/jobAd/applyUrl"?: { value?: string };
 }
 
 /**
  * Top-level shape of the HiBob /hiring/job-ads/search response.
- * `jobAds` is the array returned; property name may vary — we handle
- * the most common variants defensively.
+ * The API returns a raw array (not wrapped in an object key), but we
+ * also handle wrapped variants defensively.
  */
 export interface HiBobApiResponse {
   jobAds?: HiBobRawRecord[];
