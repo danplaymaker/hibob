@@ -54,7 +54,7 @@ export interface WebflowJobFieldData {
   name: string;
   /** HiBob job ID — used as our idempotency key */
   "hibob-id": string;
-  /** Mapped from jobAd/site */
+  /** Mapped from jobAd/site — must be a Plain Text field in Webflow */
   location: string;
   /** Full HTML description from HiBob */
   description: string;
@@ -64,10 +64,6 @@ export interface WebflowJobFieldData {
   "job-url": string;
   /** False when the job no longer appears in HiBob */
   "is-active": boolean;
-  /** ISO timestamp of the last HiBob response that included this job */
-  "last-seen-at": string;
-  /** ISO timestamp of the most recent sync run that touched this item */
-  "synced-at": string;
 }
 
 /**

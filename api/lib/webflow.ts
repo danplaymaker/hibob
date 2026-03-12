@@ -199,16 +199,11 @@ export async function updateWebflowJob(
  */
 export async function deactivateWebflowJob(itemId: string): Promise<void> {
   const collectionId = getCollectionId();
-  const now = new Date().toISOString();
 
-  // Step 1: update fieldData
   await apiFetch(`/collections/${collectionId}/items/${itemId}`, {
     method: "PATCH",
     body: JSON.stringify({
-      fieldData: {
-        "is-active": false,
-        "synced-at": now,
-      },
+      fieldData: { "is-active": false },
       isDraft: true,
     }),
   });

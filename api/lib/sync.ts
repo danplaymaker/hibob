@@ -13,7 +13,7 @@ import {
 // Field mapping
 // ---------------------------------------------------------------------------
 
-function buildFieldData(job: HiBobJob, now: string): WebflowJobFieldData {
+function buildFieldData(job: HiBobJob): WebflowJobFieldData {
   return {
     name: job.title,
     "hibob-id": job.id,
@@ -22,8 +22,6 @@ function buildFieldData(job: HiBobJob, now: string): WebflowJobFieldData {
     "apply-url": job.applyUrl,
     "job-url": `/careers/${job.id}`,
     "is-active": true,
-    "last-seen-at": now,
-    "synced-at": now,
   };
 }
 
@@ -70,7 +68,6 @@ function needsUpdate(
  */
 export async function runSync(): Promise<SyncResult> {
   const startedAt = Date.now();
-  const now = new Date().toISOString();
 
   const result: SyncResult = {
     jobsFetched: 0,
@@ -80,7 +77,7 @@ export async function runSync(): Promise<SyncResult> {
     skipped: 0,
     errors: [],
     durationMs: 0,
-    timestamp: now,
+    timestamp: new Date().toISOString(),
   };
 
   // ------------------------------------------------------------------
@@ -134,7 +131,7 @@ export async function runSync(): Promise<SyncResult> {
   logger.info("sync: starting upsert phase", { jobs: hibobJobs.length });
 
   for (const job of hibobJobs) {
-    const fieldData = buildFieldData(job, now);
+    const fieldData = buildFieldData(job);
     const existing = existingByHibobId.get(job.id);
 
     if (!existing) {
