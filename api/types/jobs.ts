@@ -20,6 +20,7 @@ export interface HiBobJob {
  * The API nests fields under a `jobAd` key when using the /search endpoint.
  */
 export interface HiBobRawRecord {
+  // Nested shape (some API versions wrap fields under jobAd)
   jobAd?: {
     id?: string;
     title?: string;
@@ -27,6 +28,12 @@ export interface HiBobRawRecord {
     description?: string;
     applyUrl?: string;
   };
+  // Flat shape (fields returned directly on the record)
+  id?: string;
+  title?: string;
+  site?: string;
+  description?: string;
+  applyUrl?: string;
 }
 
 /**

@@ -3,12 +3,15 @@ import { logger } from "./logger";
 
 const HIBOB_SEARCH_URL = "https://api.hibob.com/v1/hiring/job-ads/search";
 
+// HiBob's /search endpoint scopes fields within the jobAd namespace automatically.
+// Sending "jobAd/id" causes the API to look for "/jobAd/jobAd/id" (double-prefix).
+// The correct format is just the bare field name.
 const REQUEST_FIELDS = [
-  "jobAd/id",
-  "jobAd/title",
-  "jobAd/site",
-  "jobAd/description",
-  "jobAd/applyUrl",
+  "id",
+  "title",
+  "site",
+  "description",
+  "applyUrl",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -39,24 +42,20 @@ function buildAuthHeader(): string {
  * discarding records that are missing the mandatory `id` field.
  */
 function normaliseRecord(raw: HiBobRawRecord): HiBobJob | null {
-  const j = raw.jobAd;
+  // Support both nested (raw.jobAd.id) and flat (raw.id) response shapes
+  const id = raw.jobAd?.id ?? raw.id;
 
-  if (!j) {
-    logger.warn("hibob: record missing `jobAd` key — skipping", { raw });
-    return null;
-  }
-
-  if (!j.id) {
-    logger.warn("hibob: record missing `jobAd.id` — skipping", { raw });
+  if (!id) {
+    logger.warn("hibob: record missing id — skipping", { raw });
     return null;
   }
 
   return {
-    id: j.id,
-    title: j.title ?? "",
-    site: j.site ?? "",
-    description: j.description ?? "",
-    applyUrl: j.applyUrl ?? "",
+    id,
+    title: raw.jobAd?.title ?? raw.title ?? "",
+    site: raw.jobAd?.site ?? raw.site ?? "",
+    description: raw.jobAd?.description ?? raw.description ?? "",
+    applyUrl: raw.jobAd?.applyUrl ?? raw.applyUrl ?? "",
   };
 }
 
