@@ -179,7 +179,7 @@ export async function updateWebflowJob(
     `/collections/${collectionId}/items/${itemId}`,
     {
       method: "PATCH",
-      body: JSON.stringify({ fieldData }),
+      body: JSON.stringify({ fieldData, isDraft: false }),
     }
   );
 
