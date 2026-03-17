@@ -101,7 +101,7 @@ export interface BetfairMarketBook {
 
 export interface BetfairRunnerBook {
   selectionId: number;
-  status: "ACTIVE" | "WINNER" | "LOSER" | "REMOVED" | "HIDDEN";
+  status: "ACTIVE" | "WINNER" | "LOSER" | "REMOVED" | "REMOVED_VACANT" | "HIDDEN";
   totalMatched?: number;
   ex?: BetfairExchangePrices;
 }

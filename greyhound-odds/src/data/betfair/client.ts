@@ -224,11 +224,16 @@ export class BetfairClient {
    * Returns best back/lay prices and matched volume per runner.
    * This is the core call for building the price grid.
    *
+   * Uses EX_BEST_OFFERS only (data weight ~5 per market, allowing up to 40
+   * markets per call). Runner-level totalMatched is available without EX_TRADED,
+   * which would increase weight to ~20 and reduce batch size to 10.
+   *
    * @param marketIds - Array of market IDs (max 40 per call per Betfair limits)
    */
   async listMarketBook(marketIds: string[]): Promise<BetfairMarketBook[]> {
     const priceProjection: BetfairPriceProjection = {
-      priceData: ["EX_BEST_OFFERS", "EX_TRADED"],
+      priceData: ["EX_BEST_OFFERS"],
+      virtualise: true,
     };
 
     return this.bettingApiCall<BetfairMarketBook[]>(
