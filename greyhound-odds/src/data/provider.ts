@@ -4,41 +4,60 @@ import { mockProvider } from "./mock-provider";
 /**
  * Data provider registry.
  *
- * To add a live data source:
- * 1. Create a new file (e.g., betfair-provider.ts) implementing OddsDataProvider
- * 2. Register it here
- * 3. Set ODDS_PROVIDER env var to switch
+ * Available providers:
+ *   "mock"      — Mock data for development/demo (default)
+ *   "betfair"   — Live Betfair Exchange data (requires API credentials)
+ *   "composite" — Betfair + bookmaker odds (requires Betfair + bookmaker source)
  *
- * Integration points for live data:
+ * Set the ODDS_PROVIDER environment variable to switch providers.
  *
- * - Betfair Exchange API:
- *   Implement OddsDataProvider using the Betfair Exchange Stream API or polling API.
- *   You'll need: BETFAIR_APP_KEY, BETFAIR_USERNAME, BETFAIR_PASSWORD, BETFAIR_CERT_PATH.
- *   Map Betfair market catalogue → Race, runner catalogue → Runner,
- *   and listMarketBook → back/lay prices + matched volume.
+ * Required env vars for Betfair:
+ *   BETFAIR_APP_KEY, BETFAIR_USERNAME, BETFAIR_PASSWORD
  *
- * - Bookmaker odds (Sky Bet, Coral, etc.):
- *   Options: Oddschecker scraping, Odds API (the-odds-api.com), or direct feeds.
- *   Implement as a separate provider or as an overlay that merges bookmaker odds
- *   into the Betfair-sourced Race objects.
- *
- * - Hybrid approach (recommended):
- *   Use Betfair as primary, merge in bookmaker odds from a secondary source.
- *   Create a CompositeProvider that combines both.
+ * Optional env vars for cert-based auth:
+ *   BETFAIR_CERT_PATH, BETFAIR_KEY_PATH
  */
 
-const providers: Record<string, OddsDataProvider> = {
-  mock: mockProvider,
-  // betfair: betfairProvider,   // Phase 2
-  // composite: compositeProvider, // Phase 2
-};
+let cachedProvider: OddsDataProvider | null = null;
 
 export function getProvider(): OddsDataProvider {
+  if (cachedProvider) return cachedProvider;
+
   const id = process.env.ODDS_PROVIDER ?? "mock";
-  const provider = providers[id];
-  if (!provider) {
-    console.warn(`Unknown provider "${id}", falling back to mock`);
-    return mockProvider;
+
+  switch (id) {
+    case "betfair": {
+      // Lazy import to avoid loading Betfair deps when using mock
+      const { BetfairProvider } = require("./betfair");
+      cachedProvider = new BetfairProvider();
+      break;
+    }
+
+    case "composite": {
+      const { BetfairProvider } = require("./betfair");
+      const { CompositeProvider } = require("./composite-provider");
+      // Bookmaker source is null until a BookmakerOddsSource is implemented
+      // and plugged in. For now, composite = Betfair-only with the hook ready.
+      cachedProvider = new CompositeProvider(new BetfairProvider(), null);
+      break;
+    }
+
+    case "mock":
+      cachedProvider = mockProvider;
+      break;
+
+    default:
+      console.warn(`Unknown provider "${id}", falling back to mock`);
+      cachedProvider = mockProvider;
   }
-  return provider;
+
+  console.log(`[Provider] Using ${cachedProvider!.name} (${cachedProvider!.id})`);
+  return cachedProvider!;
+}
+
+/**
+ * Reset the cached provider (useful for testing or hot-reloading config).
+ */
+export function resetProvider(): void {
+  cachedProvider = null;
 }

@@ -48,7 +48,14 @@ src/
 │   └── ConfidenceBadge.tsx # Confidence score display
 ├── data/
 │   ├── provider.ts         # Data provider registry & factory
-│   └── mock-provider.ts    # Mock data with realistic scenarios
+│   ├── mock-provider.ts    # Mock data with realistic scenarios
+│   ├── composite-provider.ts # Merges Betfair + bookmaker odds
+│   └── betfair/
+│       ├── index.ts        # Public exports
+│       ├── client.ts       # Betfair API client (auth, JSON-RPC, session mgmt)
+│       ├── provider.ts     # OddsDataProvider implementation for Betfair
+│       ├── price-cache.ts  # Rolling in-memory price history cache
+│       └── types.ts        # Betfair API type definitions
 ├── hooks/
 │   ├── useMarketData.ts    # Polling hook for race/opportunity data
 │   └── useAlerts.ts        # Alert evaluation + browser notifications
@@ -90,38 +97,88 @@ Based on: matched volume, back/lay spread width, consistency of shortening acros
 - **Filters** — Min edge %, min liquidity, max minutes to off
 - **Watchlist** — Star runners to track
 
-## Plugging In Live Data (Phase 2)
+## Live Data: Betfair Integration
 
-The `OddsDataProvider` interface in `src/lib/types.ts` is the abstraction layer:
+The Betfair Exchange integration is fully built. To switch from mock data to live Betfair data:
+
+### 1. Get Betfair API credentials
+
+1. Create a Betfair account (if you don't have one)
+2. Register for a developer app key at [developer.betfair.com](https://developer.betfair.com/)
+3. Generate a self-signed SSL certificate for automated (non-interactive) login:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -keyout betfair.key -out betfair.crt -days 365 -nodes
+```
+
+4. Upload `betfair.crt` at the Betfair developer portal under your app key settings
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```
+ODDS_PROVIDER=betfair
+BETFAIR_APP_KEY=your-app-key
+BETFAIR_USERNAME=your-username
+BETFAIR_PASSWORD=your-password
+BETFAIR_CERT_PATH=./betfair.crt
+BETFAIR_KEY_PATH=./betfair.key
+```
+
+### 3. Run
+
+```bash
+npm run dev
+```
+
+The app will now fetch live greyhound WIN markets from Betfair Exchange for UK and Irish tracks.
+
+### How it works
+
+| Component | Role |
+|---|---|
+| `betfair/client.ts` | Handles cert-based or interactive login, session keep-alive, JSON-RPC transport |
+| `betfair/provider.ts` | Maps Betfair API responses → `Race[]` / `Runner[]`, manages catalogue caching |
+| `betfair/price-cache.ts` | Stores rolling 15-minute price snapshots per runner for movement calculations |
+| `betfair/types.ts` | Full TypeScript definitions for Betfair API schemas |
+
+### Rate limits
+
+- Free tier: **5 requests/second** per app key
+- `listMarketCatalogue` is cached for 60 seconds
+- `listMarketBook` supports up to 40 markets per call (batched automatically)
+- At 5s polling with ~10 races, you'll use ~1 req/s well within limits
+
+### Providers
+
+| `ODDS_PROVIDER` | What it does |
+|---|---|
+| `mock` (default) | Demo data, no API needed |
+| `betfair` | Live Betfair Exchange prices only (bookmaker odds blank) |
+| `composite` | Betfair + bookmaker overlay (once a BookmakerOddsSource is plugged in) |
+
+## Bookmaker Odds (Phase 2)
+
+The `CompositeProvider` in `src/data/composite-provider.ts` is ready to accept a `BookmakerOddsSource`:
 
 ```typescript
-interface OddsDataProvider {
-  id: string;
+interface BookmakerOddsSource {
   name: string;
-  getRaces(): Promise<Race[]>;
-  getRace(raceId: string): Promise<Race | null>;
-  getRunnerHistory(runnerId: string): Promise<PriceSnapshot[]>;
+  getOddsForRace(track: string, raceTime: string): Promise<Map<string, { odds: number; source: string }>>;
 }
 ```
 
-### Betfair Exchange
-
-Create `src/data/betfair-provider.ts`:
-- Use the Betfair Exchange Streaming API or polling API
-- Map `listMarketCatalogue` → `Race[]`
-- Map `listMarketBook` → runner back/lay prices + matched volume
-- Requires: `BETFAIR_APP_KEY`, `BETFAIR_USERNAME`, `BETFAIR_PASSWORD`, `BETFAIR_CERT_PATH`
-
-### Bookmaker Odds
-
-Options:
-- [The Odds API](https://the-odds-api.com/) — aggregated bookmaker odds
-- Oddschecker scraping
+Options to implement:
+- [The Odds API](https://the-odds-api.com/) — cleanest option if greyhound coverage is sufficient
+- Oddschecker scraper
 - Direct bookmaker feeds
 
-Recommended approach: create a `CompositeProvider` that uses Betfair as primary and overlays bookmaker odds from a secondary source.
-
-Register new providers in `src/data/provider.ts` and set `ODDS_PROVIDER` env var.
+The composite provider handles runner name matching (normalised + fuzzy) between Betfair and bookmaker sources automatically.
 
 ## Deployment
 
