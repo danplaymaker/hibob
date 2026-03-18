@@ -36,9 +36,12 @@ export function getProvider(): OddsDataProvider {
     case "composite": {
       const { BetfairProvider } = require("./betfair");
       const { CompositeProvider } = require("./composite-provider");
-      // Bookmaker source is null until a BookmakerOddsSource is implemented
-      // and plugged in. For now, composite = Betfair-only with the hook ready.
-      cachedProvider = new CompositeProvider(new BetfairProvider(), null);
+      const { OddscheckerBookmakerSource } = require("./oddschecker");
+      const bookmaker = process.env.ODDSCHECKER_BOOKMAKER ?? "Bet365";
+      cachedProvider = new CompositeProvider(
+        new BetfairProvider(),
+        new OddscheckerBookmakerSource({ bookmaker })
+      );
       break;
     }
 

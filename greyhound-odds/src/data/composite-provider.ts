@@ -11,10 +11,8 @@ import { OddsDataProvider, Race, PriceSnapshot, Runner } from "../lib/types";
  * with bookmaker odds from the secondary source by matching on runner name.
  *
  * Bookmaker source options (implement BookmakerOddsSource):
- * - The Odds API (the-odds-api.com)
- * - Oddschecker scraper
- * - Direct bookmaker feeds
- * - Manual input / CSV
+ * - OddscheckerBookmakerSource — scrapes Oddschecker for Bet365 + other UK bookie odds
+ * - Manual input / CSV (future)
  */
 
 export interface BookmakerOddsSource {

@@ -52,7 +52,7 @@ const GREYHOUND_NAMES = [
   "Clonbrien Prince",
 ];
 
-const BOOKMAKER_SOURCES = ["Sky Bet", "Coral", "Ladbrokes", "Betfred", "William Hill"];
+const BOOKMAKER_SOURCES = ["Bet365", "Coral", "Ladbrokes", "Betfred", "William Hill"];
 
 // Seeded pseudo-random for reproducible demos
 let seed = 42;
