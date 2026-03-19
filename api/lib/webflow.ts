@@ -213,11 +213,21 @@ export async function deactivateWebflowJob(itemId: string): Promise<void> {
     method: "PATCH",
     body: JSON.stringify({
       fieldData: { "is-active": false },
-      isDraft: true,
+      isDraft: false,
     }),
   });
 
   await sleep(WRITE_DELAY_MS);
+
+  // Publish so the is-active=false change goes live on the site
+  try {
+    await publishItems([itemId]);
+  } catch (err) {
+    logger.warn("webflow: publish after deactivation failed — item saved but still live", {
+      itemId,
+      error: String(err),
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
